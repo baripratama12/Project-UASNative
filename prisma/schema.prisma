@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Pelanggan {
+  id                 String     @id @default(uuid())
+  namaPelanggan      String      @unique
+  kontakPelanggan    String
+  Transaksi          Transaksi[]
+}
+
+model Barang {
+  id              String      @id @default(uuid())
+  namaBarang      String      @unique
+  merek           String
+  harga           Int
+  Gudang          Gudang[]
+}
+
+model Gudang {
+  id            String   @id @default(uuid())
+  stok          Int
+  barangId      String?
+  pemasokId     String?
+  karyawanId    String?
+  Barang        Barang?    @relation(fields: [barangId], references: [id])
+  Pemasok       Pemasok?   @relation(fields: [pemasokId], references: [id])
+  Karyawan      Karyawan?  @relation(fields: [karyawanId], references: [id])
+  Transaksi     Transaksi[]
+}
+
+model Pemasok {
+  id            String   @id @default(uuid())
+  namaPemasok   String   @unique
+  kontakPemasok String
+  Gudang        Gudang[]
+}
+
+model Transaksi {
+  id          String    @id  @default(uuid())
+  pelangganId String?
+  gudangId    String?
+  tanggal     String
+  jumlah      Int
+  Gudang      Gudang?    @relation(fields: [gudangId], references: [id])
+  Pelanggan   Pelanggan? @relation(fields: [pelangganId], references: [id])
+}
+
+model Karyawan {
+  id                String      @id  @default(uuid())
+  namaKaryawan      String      @unique
+  durasi            Int
+  Gudang            Gudang[]
+}

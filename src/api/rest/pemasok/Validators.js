@@ -1,0 +1,109 @@
+const { checkSchema } = require('express-validator');
+
+const { dbModel } = require('./Services');
+const SchemaValidatorHandler = require('../../../utils/services/SchemaValidatorHandler');
+const { ValidateSchemaModel, ValidateSchemaDefault } = require('../../../utils/services/ValidateSchema');
+
+const config = {
+  //
+};
+
+const FilterSchema = () => ({
+  //
+});
+
+const ModelSchema = (options) => {
+  const { customModel, checkIn, errorIf } = options;
+  const configSchema = {
+    checkIn,
+    errorIf,
+    dbModel: customModel || dbModel
+  };
+
+  return {
+    // Id
+    ...ValidateSchemaModel({
+      ...configSchema,
+      index: 'id',
+    }),
+
+    // Nama
+    ...ValidateSchemaDefault({
+      ...configSchema,
+      index: 'namaPemasok',
+    }),
+
+    // Kontak
+    ...ValidateSchemaDefault({
+      ...configSchema,
+      index: 'kontakPemasok',
+    }),
+  };
+};
+
+function CreateValidator() {
+  const { namaPemasok, kontakPemasok } = ModelSchema({
+    checkIn: ['body'],
+    errorIf: 'exist'
+  });
+
+  const input = {
+    namaPemasok: { ...namaPemasok, notEmpty: { errorMessage: 'validations.required' } },
+    kontakPemasok: { ...kontakPemasok, optional: true },
+  };
+
+  return SchemaValidatorHandler([checkSchema(input)]);
+}
+
+function ReadValidator() {
+  const { id } = ModelSchema({
+    checkIn: ['params'],
+    errorIf: 'notExist'
+  });
+
+  const input = {
+    id: { ...id, exists: { errorMessage: 'validations.required', } }
+  };
+
+  return SchemaValidatorHandler([checkSchema(input)]);
+}
+
+function UpdateValidator() {
+  const { namaPemasok, kontakPemasok } = ModelSchema({
+    checkIn: ['body'],
+    errorIf: 'exist'
+  });
+
+  const input = {
+    namaPemasok: { ...namaPemasok, optional: true },
+    kontakPemasok: { ...kontakPemasok, optional: true },
+  };
+
+  return SchemaValidatorHandler([checkSchema(input)]);
+}
+
+function DeleteValidator() {
+  return SchemaValidatorHandler([]);
+}
+
+function WheresValidator() {
+  const input = FilterSchema();
+
+  return SchemaValidatorHandler([checkSchema(input)]);
+}
+
+module.exports = {
+  // Config
+  config,
+  ModelSchema,
+  FilterSchema,
+
+  // CRUD
+  CreateValidator,
+  ReadValidator,
+  UpdateValidator,
+  DeleteValidator,
+
+  // OTHER
+  WheresValidator
+};
